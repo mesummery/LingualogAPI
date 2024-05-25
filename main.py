@@ -4,9 +4,12 @@ from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from logger import get_logger
-from exception import ConnectionError, RateLimitError, ContentPolicyViolationError, APIError
-from functions.generator import revise
+from exception import ConnectionError, RateLimitError, ContentPolicyViolationError, APIError, WordCountError, TextLengthError
+from generator import revise_text
 from text_to_speech import text_to_speech
+from storage import upload_data_to_storage
+from domain.readaloud_response import ReadAloudResponse
+from domain.revise_response import ReviseResponse
 
 logger = get_logger()
 app = FastAPI()
@@ -20,18 +23,20 @@ app.add_middleware(
 
 
 class ReviseParameters(BaseModel):
-    draft: str
+    text: str
 
 
 class TextToSpeechParameters(BaseModel):
     text: str
+    uuid: str
 
 
 @app.post("/generate/revise")
 def generate_revised_entry(parameter: ReviseParameters):
     try:
-        revised = revise(parameter.draft)
-        return revised
+        result = revise_text(parameter.text)
+        response = ReviseResponse(revised_text=result.revised)
+        return response
 
     except ConnectionError as e:
         logger.error(f"generate_revised_entry: {e}")
@@ -53,6 +58,16 @@ def generate_revised_entry(parameter: ReviseParameters):
         raise HTTPException(
             status_code=500, detail=e.to_dict())
 
+    except WordCountError as e:
+        logger.error(f"generate_revised_entry: {e}")
+        raise HTTPException(
+            status_code=400, detail=e.to_dict())
+
+    except TextLengthError as e:
+        logger.error(f"generate_revised_entry: {e}")
+        raise HTTPException(
+            status_code=400, detail=e.to_dict())
+
     except Exception as e:
         logger.error(f"generate_revised_entry: {e}")
         raise HTTPException(
@@ -62,13 +77,14 @@ def generate_revised_entry(parameter: ReviseParameters):
 
 
 @app.post(
-    "/generate/voice",
-    response_class=Response
+    "/generate/readaloud",
 )
-def generate_voice(parameter: TextToSpeechParameters):
+def generate_readaloud(parameter: TextToSpeechParameters):
     try:
         audio_content = text_to_speech(parameter.text)
-        return Response(audio_content, media_type='audio/mpeg')
+        path = upload_data_to_storage(parameter.uuid, audio_content)
+        response = ReadAloudResponse(file_path=path)
+        return response
 
     except Exception as e:
         logger.error(f"generate_voice: {e}")

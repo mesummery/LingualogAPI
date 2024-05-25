@@ -1,13 +1,27 @@
 class TextLengthError(Exception):
 
     def __init__(self, message: str):
+        self.code = "text_length"
         self.message = message
+
+    def to_dict(self) -> dict[str, any]:
+        return {
+            "code": self.code,
+            "message": self.message
+        }
 
 
 class WordCountError(Exception):
 
     def __init__(self, message: str):
+        self.code = "word_count"
         self.message = message
+
+    def to_dict(self) -> dict[str, any]:
+        return {
+            "code": self.code,
+            "message": self.message
+        }
 
 
 class APIError(Exception):

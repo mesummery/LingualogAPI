@@ -1,6 +1,8 @@
 # Local
 
 ```
+uvicorn main:app --reload
+
 python -c "import openai; print(openai.__version__)"
 
 Traceback (most recent call last):

@@ -1,27 +1,19 @@
+import os
 import json
 import exception
-from firebase_functions.params import IntParam, StringParam, SecretParam
+from dotenv import load_dotenv
 from openai import OpenAI, APIConnectionError, RateLimitError
-# from dotenv import load_dotenv
 from logger import get_logger
 from domain.revised_entry import RevisedEntry
 logger = get_logger()
 
-openai_api_key = SecretParam("OPENAI_API_KEY").value
-chat_model_name = StringParam("CHAT_MODEL_NAME").value
-min_words = IntParam("MIN_WORDS").value
-text_limit = IntParam("REVISE_TEXT_LIMIT").value
+load_dotenv()
+openai_api_key = os.getenv("OPENAI_API_KEY")
+chat_model_name = os.getenv("CHAT_MODEL_NAME")
+min_words = int(os.getenv("MIN_WORDS"))
+text_limit = int(os.getenv("REVISE_TEXT_LIMIT"))
 
 client = OpenAI(api_key=openai_api_key)
-
-
-def __is_valid_word_count(text: str) -> bool:
-    if min_words > len(text.split()):
-        logger.info(f"{text} is NG.")
-        return False
-    else:
-        logger.info(f"{text} is OK.")
-        return True
 
 
 def revise_text(text: str) -> RevisedEntry:
@@ -29,7 +21,7 @@ def revise_text(text: str) -> RevisedEntry:
         raise exception.WordCountError(message="The text contains too few words.")
 
     if len(text) > text_limit:
-        raise exception.WordCountError(message="The text is too long.")
+        raise exception.TextLengthError(message="The text is too long.")
 
     prompt = f"""
     {text}
