@@ -1,4 +1,3 @@
-import os
 import json
 import exception
 from firebase_functions.params import IntParam, StringParam, SecretParam
@@ -7,11 +6,6 @@ from openai import OpenAI, APIConnectionError, RateLimitError
 from logger import get_logger
 from domain.revised_entry import RevisedEntry
 logger = get_logger()
-
-# load_dotenv()
-# openai_api_key = os.getenv("OPENAI_API_KEY")
-# chat_model_name = os.getenv("CHAT_MODEL_NAME")
-# min_words = int(os.getenv("MIN_WORDS"))
 
 openai_api_key = SecretParam("OPENAI_API_KEY").value
 chat_model_name = StringParam("CHAT_MODEL_NAME").value
