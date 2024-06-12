@@ -1,4 +1,6 @@
+import os
 from typing import Union
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,9 +23,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+load_dotenv()
+chat_model_name_default = os.getenv("DEFAULT_CHAT_MODEL_NAME")
+chat_model_name_premium = os.getenv("PREMIUM_CHAT_MODEL_NAME")
 
 class ReviseParameters(BaseModel):
     text: str
+    is_billing: bool
 
 
 class TextToSpeechParameters(BaseModel):
@@ -34,7 +40,10 @@ class TextToSpeechParameters(BaseModel):
 @app.post("/generate/revise")
 def generate_revised_entry(parameter: ReviseParameters):
     try:
-        result = revise_text(parameter.text)
+        chat_model_name = chat_model_name_default
+        if parameter.is_billing:
+            chat_model_name = chat_model_name_premium
+        result = revise_text(parameter.text, chat_model_name)
         response = ReviseResponse(revised_text=result.revised)
         return response
 

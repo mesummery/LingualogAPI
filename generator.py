@@ -9,14 +9,14 @@ logger = get_logger()
 
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
-chat_model_name = os.getenv("CHAT_MODEL_NAME")
+prompt = os.getenv("REVISE_PROMPT")
 min_words = int(os.getenv("MIN_WORDS"))
 text_limit = int(os.getenv("REVISE_TEXT_LIMIT"))
 
 client = OpenAI(api_key=openai_api_key)
 
 
-def revise_text(text: str) -> RevisedEntry:
+def revise_text(text: str, chat_model_name: str) -> RevisedEntry:
     if min_words > len(text.split()):
         raise exception.WordCountError(message="The text contains too few words.")
 
@@ -26,13 +26,13 @@ def revise_text(text: str) -> RevisedEntry:
     prompt = f"""
     "{text}"
     ---
-    I wrote the above diary in English. Please return the corrected text with any grammatical mistakes or awkward expressions revised.
+    {prompt}
     """
-    revised = __generate_revised_text(prompt)
+    revised = __generate_revised_text(prompt, chat_model_name)
     return revised
 
 
-def __generate_revised_text(prompt: str) -> RevisedEntry:
+def __generate_revised_text(prompt: str, chat_model_name: str) -> RevisedEntry:
     logger.info(f"Generating text with {chat_model_name}")
     logger.info(f"Prompt {prompt}")
     try:

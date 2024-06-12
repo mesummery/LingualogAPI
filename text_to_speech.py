@@ -1,3 +1,4 @@
+import emoji
 from google.cloud import texttospeech
 from logger import get_logger
 
@@ -6,6 +7,7 @@ logger = get_logger()
 client = texttospeech.TextToSpeechClient()
 
 def text_to_speech(text: str):
+    text = emoji.replace_emoji(text, replace='.')
     synthesis_input = texttospeech.SynthesisInput(text=text)
 
     # Build the voice request, select the language code ("en-US") and the ssml
