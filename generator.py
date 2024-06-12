@@ -24,9 +24,9 @@ def revise_text(text: str) -> RevisedEntry:
         raise exception.TextLengthError(message="The text is too long.")
 
     prompt = f"""
-    {text}
+    "{text}"
     ---
-    英語の日記を書きました。文法の間違いや不自然な表現を添削をした文章を返してください。
+    I wrote the above diary in English. Please return the corrected text with any grammatical mistakes or awkward expressions revised.
     """
     revised = __generate_revised_text(prompt)
     return revised
