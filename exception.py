@@ -76,3 +76,16 @@ class InputWordError(APIError):
     def __init__(self, message: str):
         self.code = "ng_word"
         self.message = message
+
+
+class PermissionError(Exception):
+
+    def __init__(self):
+        self.code = "billing_required"
+        self.message = "Permission error"
+
+    def to_dict(self) -> dict[str, any]:
+        return {
+            "code": self.code,
+            "message": self.message
+        }

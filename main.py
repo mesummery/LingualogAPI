@@ -6,12 +6,15 @@ from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from logger import get_logger
-from exception import ConnectionError, RateLimitError, ContentPolicyViolationError, APIError, WordCountError, TextLengthError
+from exception import ConnectionError, RateLimitError, ContentPolicyViolationError, APIError, WordCountError, TextLengthError, PermissionError
 from generator import revise_text
 from text_to_speech import text_to_speech
 from storage import upload_data_to_storage
 from domain.readaloud_response import ReadAloudResponse
 from domain.revise_response import ReviseResponse
+from domain.readaloud_pubsub_message import ReadAloudPubSubMessage
+from domain.revise_pubsub_message import RevisePubSubMessage
+from pubsub import publish_to_read_aloud_usage_topic, publish_to_revise_usage_topic
 
 logger = get_logger()
 app = FastAPI()
@@ -27,14 +30,17 @@ load_dotenv()
 chat_model_name_default = os.getenv("DEFAULT_CHAT_MODEL_NAME")
 chat_model_name_premium = os.getenv("PREMIUM_CHAT_MODEL_NAME")
 
+
 class ReviseParameters(BaseModel):
+    uid: str
     text: str
     is_billing: bool
 
 
 class TextToSpeechParameters(BaseModel):
+    uid: str
     text: str
-    uuid: str
+    is_billing: bool
 
 
 @app.post("/generate/revise")
@@ -45,6 +51,11 @@ def generate_revised_entry(parameter: ReviseParameters):
             chat_model_name = chat_model_name_premium
         result = revise_text(parameter.text, chat_model_name)
         response = ReviseResponse(revised_text=result.revised)
+
+        message = RevisePubSubMessage(
+            uid=parameter.uid, text=parameter.text, revise_text=result.revised)
+        publish_to_revise_usage_topic(data=message)
+
         return response
 
     except ConnectionError as e:
@@ -90,9 +101,17 @@ def generate_revised_entry(parameter: ReviseParameters):
 )
 def generate_readaloud(parameter: TextToSpeechParameters):
     try:
+        if parameter.is_billing:
+            raise PermissionError()
+
         audio_content = text_to_speech(parameter.text)
-        path = upload_data_to_storage(parameter.uuid, audio_content)
+        path = upload_data_to_storage(parameter.uid, audio_content)
         response = ReadAloudResponse(file_path=path)
+
+        message = ReadAloudPubSubMessage(
+            uid=parameter.uid, text=parameter.text)
+        publish_to_read_aloud_usage_topic(data=message)
+
         return response
 
     except Exception as e:
