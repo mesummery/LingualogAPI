@@ -7,9 +7,8 @@ logger = get_logger()
 client = texttospeech.TextToSpeechClient()
 
 def text_to_speech(text: str):
-    text = emoji.replace_emoji(text, replace='.')
-    synthesis_input = texttospeech.SynthesisInput(text=text)
-
+    replaced_text = emoji.replace_emoji(text, replace='.')
+    synthesis_input = texttospeech.SynthesisInput(text=replaced_text)
     # Build the voice request, select the language code ("en-US") and the ssml
     # voice gender ("neutral")
     voice = texttospeech.VoiceSelectionParams(

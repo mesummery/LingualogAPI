@@ -9,7 +9,7 @@ logger = get_logger()
 
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
-prompt = os.getenv("REVISE_PROMPT")
+revise_prompt = os.getenv("REVISE_PROMPT")
 min_words = int(os.getenv("MIN_WORDS"))
 text_limit = int(os.getenv("REVISE_TEXT_LIMIT"))
 
@@ -26,7 +26,7 @@ def revise_text(text: str, chat_model_name: str) -> RevisedEntry:
     prompt = f"""
     "{text}"
     ---
-    {prompt}
+    {revise_prompt}
     """
     revised = __generate_revised_text(prompt, chat_model_name)
     return revised
@@ -48,7 +48,7 @@ def __generate_revised_text(prompt: str, chat_model_name: str) -> RevisedEntry:
             # response_format={"type": "json_object"}, # FIXME: use gpt-4-1106-previewgpt-3.5-turbo-1106
         )
         answer = response.choices[0].message.function_call.arguments
-        logger.info(answer)
+        # logger.info(answer)
         dict = json.loads(answer)
         logger.info(f"Answer: {dict}")
         entry = RevisedEntry.from_json(dict)

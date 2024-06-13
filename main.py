@@ -53,7 +53,7 @@ def generate_revised_entry(parameter: ReviseParameters):
         response = ReviseResponse(revised_text=result.revised)
 
         message = RevisePubSubMessage(
-            uid=parameter.uid, text=parameter.text, revise_text=result.revised)
+            uid=parameter.uid, text=parameter.text, revised_text=result.revised)
         publish_to_revise_usage_topic(data=message)
 
         return response
@@ -101,18 +101,22 @@ def generate_revised_entry(parameter: ReviseParameters):
 )
 def generate_readaloud(parameter: TextToSpeechParameters):
     try:
-        if parameter.is_billing:
+        if not parameter.is_billing:
             raise PermissionError()
-
         audio_content = text_to_speech(parameter.text)
         path = upload_data_to_storage(parameter.uid, audio_content)
         response = ReadAloudResponse(file_path=path)
 
         message = ReadAloudPubSubMessage(
-            uid=parameter.uid, text=parameter.text)
+            uid=parameter.uid, text_to_speech=parameter.text)
         publish_to_read_aloud_usage_topic(data=message)
 
         return response
+
+    except PermissionError as e:
+        logger.error(f"generate_revised_entry: {e}")
+        raise HTTPException(
+            status_code=400, detail=e.to_dict())
 
     except Exception as e:
         logger.error(f"generate_voice: {e}")
