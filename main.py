@@ -1,5 +1,4 @@
 import os
-from typing import Union
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
@@ -34,12 +33,16 @@ chat_model_name_premium = os.getenv("PREMIUM_CHAT_MODEL_NAME")
 class ReviseParameters(BaseModel):
     uid: str
     text: str
+    entry_id: str
+    created_at: str
     is_billing: bool
 
 
 class TextToSpeechParameters(BaseModel):
     uid: str
     text: str
+    entry_id: str
+    created_at: str
     is_billing: bool
 
 
@@ -51,9 +54,15 @@ def generate_revised_entry(parameter: ReviseParameters):
             chat_model_name = chat_model_name_premium
         result = revise_text(parameter.text, chat_model_name)
         response = ReviseResponse(revised_text=result.revised)
+        created_at = parameter.created_at
 
         message = RevisePubSubMessage(
-            uid=parameter.uid, text=parameter.text, revised_text=result.revised)
+            uid=parameter.uid,
+            text=parameter.text,
+            revised_text=result.revised,
+            entry_id=parameter.entry_id,
+            created_at=created_at
+        )
         publish_to_revise_usage_topic(data=message)
 
         return response
@@ -106,9 +115,15 @@ def generate_readaloud(parameter: TextToSpeechParameters):
         audio_content = text_to_speech(parameter.text)
         path = upload_data_to_storage(parameter.uid, audio_content)
         response = ReadAloudResponse(file_path=path)
+        created_at = parameter.created_at
 
         message = ReadAloudPubSubMessage(
-            uid=parameter.uid, text_to_speech=parameter.text)
+            uid=parameter.uid,
+            text_to_speech=parameter.text,
+            path=path,
+            entry_id=parameter.entry_id,
+            created_at=created_at
+        )
         publish_to_read_aloud_usage_topic(data=message)
 
         return response
