@@ -14,6 +14,7 @@ from domain.revise_response import ReviseResponse
 from domain.readaloud_pubsub_message import ReadAloudPubSubMessage
 from domain.revise_pubsub_message import RevisePubSubMessage
 from pubsub import publish_to_read_aloud_usage_topic, publish_to_revise_usage_topic
+from typing import Optional
 
 logger = get_logger()
 app = FastAPI()
@@ -35,7 +36,7 @@ class ReviseParameters(BaseModel):
     text: str
     entry_id: str
     created_at: str
-    is_billing: bool
+    tid: Optional[str]
 
 
 class TextToSpeechParameters(BaseModel):
@@ -43,14 +44,16 @@ class TextToSpeechParameters(BaseModel):
     text: str
     entry_id: str
     created_at: str
-    is_billing: bool
+    voice_id: str = 'default'
+    voice_type: str
+    tid: Optional[str]
 
 
 @app.post("/generate/revise")
 def generate_revised_entry(parameter: ReviseParameters):
     try:
         chat_model_name = chat_model_name_default
-        if parameter.is_billing:
+        if parameter.tid is not None:
             chat_model_name = chat_model_name_premium
         result = revise_text(parameter.text, chat_model_name)
         response = ReviseResponse(revised_text=result.revised)
@@ -61,7 +64,8 @@ def generate_revised_entry(parameter: ReviseParameters):
             text=parameter.text,
             revised_text=result.revised,
             entry_id=parameter.entry_id,
-            created_at=created_at
+            created_at=created_at,
+            tid=parameter.tid,
         )
         publish_to_revise_usage_topic(data=message)
 
@@ -110,9 +114,9 @@ def generate_revised_entry(parameter: ReviseParameters):
 )
 def generate_readaloud(parameter: TextToSpeechParameters):
     try:
-        if not parameter.is_billing:
-            raise PermissionError()
-        audio_content = text_to_speech(parameter.text)
+        voice_id = parameter.voice_id
+        voice_type = parameter.voice_type
+        audio_content = text_to_speech(parameter.text, voice_id, voice_type)
         path = upload_data_to_storage(parameter.uid, audio_content)
         response = ReadAloudResponse(file_path=path)
         created_at = parameter.created_at
@@ -120,9 +124,12 @@ def generate_readaloud(parameter: TextToSpeechParameters):
         message = ReadAloudPubSubMessage(
             uid=parameter.uid,
             text_to_speech=parameter.text,
+            voice_id=parameter.voice_id,
+            voice_type=parameter.voice_type,
             path=path,
             entry_id=parameter.entry_id,
-            created_at=created_at
+            created_at=created_at,
+            tid=parameter.tid,
         )
         publish_to_read_aloud_usage_topic(data=message)
 

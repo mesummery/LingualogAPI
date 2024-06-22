@@ -5,19 +5,26 @@ class RevisePubSubMessage:
         text: str,
         revised_text: str,
         entry_id: str,
-        created_at: str
+        created_at: str,
+        tid: str | None,
     ):
         self.uid = uid
+        self.tid = tid
         self.text = text
         self.revised_text = revised_text
         self.entry_id = entry_id
         self.created_at = created_at
 
     def to_dict(self) -> dict[str, any]:
-        return {
+        dictionary = {
             "uid": self.uid,
             "text": self.text,
             "revised_text": self.revised_text,
             "entry_id": self.entry_id,
             "created_at": self.created_at,
         }
+
+        if self.tid is not None:
+            dictionary["tid"] = self.tid
+
+        return dictionary
