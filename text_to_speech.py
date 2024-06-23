@@ -8,6 +8,9 @@ client = texttospeech.TextToSpeechClient()
 
 
 def _get_voice_name(voice_id: str, voice_type: str) -> str:
+    logger.debug(f"voice_id {voice_id}")
+    logger.debug(f"voice_type {voice_type}")
+
     # API仕様が変わった時に前のアプリバージョンをサポートする
     if voice_type == "premium":
         return "en-US-Wavenet-A"
@@ -19,10 +22,12 @@ def text_to_speech(text: str, voice_id: str, voice_type: str):
     synthesis_input = texttospeech.SynthesisInput(text=replaced_text)
     # Build the voice request, select the language code ("en-US") and the ssml
     # voice gender ("neutral")
+    voice_name = _get_voice_name(voice_id, voice_type)
+    logger.info(f'voice_name: {voice_name}')
     voice = texttospeech.VoiceSelectionParams(
         language_code="en-US",
         # ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL,
-        name=_get_voice_name(voice_id, voice_type)
+        name=voice_name
     )
     # Select the type of audio file you want returned
     audio_config = texttospeech.AudioConfig(
