@@ -37,6 +37,8 @@ class ReviseParameters(BaseModel):
     entry_id: str
     created_at: str
     tid: Optional[str]
+    original_tid: Optional[str]
+    expiration_date: Optional[str]
 
 
 class TextToSpeechParameters(BaseModel):
@@ -47,6 +49,8 @@ class TextToSpeechParameters(BaseModel):
     voice_id: str = 'default'
     voice_type: str
     tid: Optional[str]
+    original_tid: Optional[str]
+    expiration_date: Optional[str]
 
 
 @app.post("/generate/revise")
@@ -66,6 +70,8 @@ def generate_revised_entry(parameter: ReviseParameters):
             entry_id=parameter.entry_id,
             created_at=created_at,
             tid=parameter.tid,
+            original_tid=parameter.original_tid,
+            expiration_date=parameter.expiration_date
         )
         publish_to_revise_usage_topic(data=message)
 
@@ -130,6 +136,8 @@ def generate_readaloud(parameter: TextToSpeechParameters):
             entry_id=parameter.entry_id,
             created_at=created_at,
             tid=parameter.tid,
+            original_tid=parameter.original_tid,
+            expiration_date=parameter.expiration_date
         )
         publish_to_read_aloud_usage_topic(data=message)
 

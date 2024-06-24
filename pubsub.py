@@ -17,7 +17,7 @@ publisher = pubsub_v1.PublisherClient()
 
 def publish_to_revise_usage_topic(data: RevisePubSubMessage):
     try:
-        logger.info( os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+        # logger.info( os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
         topic_path = publisher.topic_path(project_id, revise_usage_topic)
         message = json.dumps(
             {
