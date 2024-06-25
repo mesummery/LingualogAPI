@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   title: lingualog-api
-  description: Sample API on API Gateway with a Cloud Run backend
+  description: Lingualog API
   version: 1.0.0
 schemes:
   - https
