@@ -1,0 +1,31 @@
+# openapi2-run.yaml
+swagger: "2.0"
+info:
+  title: lingualog-api
+  description: Sample API on API Gateway with a Cloud Run backend
+  version: 1.0.0
+schemes:
+  - https
+produces:
+  - application/json
+x-google-backend:
+  address: https://lingualog-dj2yfqvoca-uc.a.run.app
+paths:
+  /generate/revise:
+    post:
+      summary: Generate revised text
+      operationId: generate-revise
+      responses:
+        "200":
+          description: A successful response
+          schema:
+            type: string
+  /generate/readaloud:
+    post:
+      summary: Generate read aloud voice
+      operationId: generate-readaloud
+      responses:
+        "200":
+          description: A successful response
+          schema:
+            type: string

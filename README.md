@@ -23,20 +23,49 @@ cd functions
 firebase emulators:start
 ```
 
-# Backend Deploy
+# Develop
+## Develop Backend Deploy
 ```
 gcloud config set project lingualog-dev
 gcloud run deploy lingualog --region=us-central1 --source .
 
 ```
+## Develop Gateway Deploy
+```
+export CONFIG_ID=
+export API_ID=lingualog-api
+export PROJECT_ID=lingualog-dev
+export SERVICE_ACCOUNT_EMAIL=
 
-# Prod Backend Deploy
+# Set Config
+gcloud api-gateway api-configs create $CONFIG_ID \
+  --api=$API_ID --openapi-spec=openapi2-run.yaml \
+  --project=$PROJECT_ID --backend-auth-service-account=$SERVICE_ACCOUNT_EMAIL
+
+# Show Config
+gcloud api-gateway api-configs describe $CONFIG_ID \
+  --api=$API_ID --project=$PROJECT_ID
+
+# Deploy
+export GATEWAY_ID=lingualog-api-gateway
+export GCP_REGION=us-central1
+gcloud api-gateway gateways create $GATEWAY_ID \
+  --api=$API_ID --api-config=$CONFIG_ID \
+  --location=$GCP_REGION --project=$PROJECT_ID
+
+# Show info
+gcloud api-gateway gateways describe $GATEWAY_ID \
+  --location=$GCP_REGION --project=$PROJECT_ID
+```
+
+# Prod 
+## Prod Backend Deploy
 ```
 gcloud config set project lingualog-9b671
 gcloud run deploy lingualog --region=us-central1 --source .
 ```
 
-# Prod Gateway Deploy
+## Prod Gateway Deploy
 ```
 gcloud endpoints services deploy openapi-run.yaml \
   --project lingualog-9b671
