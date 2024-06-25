@@ -1,8 +1,15 @@
+# import os
+# import io
 import emoji
+# from dotenv import load_dotenv
 from google.cloud import texttospeech
 from logger import get_logger
+# from openai import OpenAI
 
 logger = get_logger()
+# load_dotenv()
+# openai_api_key = os.getenv("OPENAI_API_KEY")
+# openAIClient = OpenAI(api_key=openai_api_key)
 
 client = texttospeech.TextToSpeechClient()
 
@@ -18,6 +25,16 @@ def _get_voice_name(voice_id: str, voice_type: str) -> str:
 
 
 def text_to_speech(text: str, voice_id: str, voice_type: str):
+
+    # if voice_type != "":
+    #     response = openAIClient.audio.speech.create(
+    #         model="tts-1",
+    #         voice="alloy",
+    #         response_format="mp3",
+    #         input=text,
+    #     )
+    #     return response.content
+
     replaced_text = emoji.replace_emoji(text, replace='.')
     synthesis_input = texttospeech.SynthesisInput(text=replaced_text)
     # Build the voice request, select the language code ("en-US") and the ssml
