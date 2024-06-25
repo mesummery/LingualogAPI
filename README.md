@@ -33,7 +33,7 @@ gcloud run deploy lingualog --region=us-central1 --source .
 # Prod Backend Deploy
 ```
 gcloud config set project lingualog-9b671
-gcloud run deploy lingualog --region=us-central1
+gcloud run deploy lingualog --region=us-central1 --source .
 ```
 
 # Prod Gateway Deploy

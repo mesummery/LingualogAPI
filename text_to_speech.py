@@ -1,15 +1,17 @@
-# import os
+import os
 # import io
 import emoji
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 from google.cloud import texttospeech
 from logger import get_logger
 # from openai import OpenAI
 
 logger = get_logger()
-# load_dotenv()
+load_dotenv()
 # openai_api_key = os.getenv("OPENAI_API_KEY")
 # openAIClient = OpenAI(api_key=openai_api_key)
+standard_voice_name = os.getenv("STANDARD_VOICE_NAME")
+premium_voice_name = os.getenv("PREMIUM_VOICE_NAME")
 
 client = texttospeech.TextToSpeechClient()
 
@@ -20,8 +22,8 @@ def _get_voice_name(voice_id: str, voice_type: str) -> str:
 
     # API仕様が変わった時に前のアプリバージョンをサポートする
     if voice_type == "premium":
-        return "en-US-Wavenet-A"
-    return "en-US-Standard-A"
+        return premium_voice_name
+    return standard_voice_name
 
 
 def text_to_speech(text: str, voice_id: str, voice_type: str):
