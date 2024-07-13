@@ -72,6 +72,13 @@ gcloud run deploy lingualog --region=us-central1 --source .
 ```
 
 ## Prod Gateway Deploy
+
+openapi2-run.yaml:
+```
+x-google-backend:
+  address: https://lingualog-gfk6a2p5ya-uc.a.run.app
+```
+Terminal:
 ```
 export CONFIG_ID=
 export API_ID=lingualog-api

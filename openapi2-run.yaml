@@ -9,7 +9,7 @@ schemes:
 produces:
   - application/json
 x-google-backend:
-  address: https://lingualog-dj2yfqvoca-uc.a.run.app
+  address: https://lingualog-dj2yfqvoca-uc.a.run.app #https://lingualog-gfk6a2p5ya-uc.a.run.app
 paths:
   /generate/revise:
     post:
