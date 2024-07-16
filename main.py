@@ -36,6 +36,7 @@ class ReviseParameters(BaseModel):
     text: str
     entry_id: str
     created_at: str
+    model_type: str
     tid: Optional[str]
     original_tid: Optional[str]
     expiration_date: Optional[str]
@@ -57,7 +58,7 @@ class TextToSpeechParameters(BaseModel):
 def generate_revised_entry(parameter: ReviseParameters):
     try:
         chat_model_name = chat_model_name_default
-        if parameter.tid is not None:
+        if parameter.model_type == 'premium':
             chat_model_name = chat_model_name_premium
         result = revise_text(parameter.text, chat_model_name)
         response = ReviseResponse(revised_text=result.revised)
