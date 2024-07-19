@@ -59,3 +59,25 @@ def text_to_speech(text: str, voice_id: str, voice_type: str):
         input=synthesis_input, voice=voice, audio_config=audio_config
     )
     return response.audio_content
+
+
+def sample_text_to_speech(voice_id: str):
+
+    text = "This is a sample of the reading voice. The voice you are hearing now will read your English diary entries."
+    synthesis_input = texttospeech.SynthesisInput(text=text)
+
+    logger.info(f'voice_name: {voice_id}')
+    voice = texttospeech.VoiceSelectionParams(
+        language_code="en-US",
+        # ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL,
+        name=voice_id
+    )
+    # Select the type of audio file you want returned
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.MP3
+    )
+
+    response = client.synthesize_speech(
+        input=synthesis_input, voice=voice, audio_config=audio_config
+    )
+    return response.audio_content

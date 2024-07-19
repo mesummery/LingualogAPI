@@ -1,4 +1,5 @@
 import os
+from io import BytesIO
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
@@ -7,7 +8,7 @@ from pydantic import BaseModel
 from logger import get_logger
 from exception import ConnectionError, RateLimitError, ContentPolicyViolationError, APIError, WordCountError, TextLengthError, PermissionError
 from generator import revise_text
-from text_to_speech import text_to_speech
+from text_to_speech import text_to_speech, sample_text_to_speech
 from storage import upload_data_to_storage
 from domain.readaloud_response import ReadAloudResponse
 from domain.revise_response import ReviseResponse
@@ -15,6 +16,7 @@ from domain.readaloud_pubsub_message import ReadAloudPubSubMessage
 from domain.revise_pubsub_message import RevisePubSubMessage
 from pubsub import publish_to_read_aloud_usage_topic, publish_to_revise_usage_topic
 from typing import Optional
+from pydub import AudioSegment
 
 logger = get_logger()
 app = FastAPI()
@@ -155,3 +157,80 @@ def generate_readaloud(parameter: TextToSpeechParameters):
             status_code=500, detail={
                 "message": f"{e}"
             })
+
+
+@app.post(
+    "/generate/sample_readaloud",
+)
+def generate_rsample_readaloud():
+    ids = [
+        "en-US-Standard-A",
+        "en-US-Standard-B",
+        "en-US-Standard-C",
+        "en-US-Standard-D",
+        "en-US-Standard-E",
+        "en-US-Standard-F",
+        "en-US-Standard-G",
+        "en-US-Standard-H",
+        "en-US-Standard-I",
+        "en-US-Standard-J",
+        "en-US-Journey-D",
+        "en-US-Journey-F",
+        "en-US-Journey-O",
+        "en-GB-Standard-A",
+        "en-GB-Standard-B",
+        "en-GB-Standard-C",
+        "en-GB-Standard-D",
+        "en-GB-Standard-F",
+        "en-AU-Standard-A",
+        "en-AU-Standard-B",
+        "en-AU-Standard-C",
+        "en-AU-Standard-D",
+        "en-IN-Standard-A",
+        "en-IN-Standard-B",
+        "en-IN-Standard-C",
+        "en-IN-Standard-D"
+    ]
+    for voice_id in ids:
+
+        try:
+            # voice_id = parameter.voice_id
+            # voice_type = parameter.voice_type
+            # voice_id = "en-US-Standard-B"
+            audio_content = sample_text_to_speech(voice_id)
+            song = AudioSegment.from_mp3(BytesIO(audio_content))
+            song.export(f"{voice_id}.mp3", format="mp3")
+
+            # path = upload_data_to_storage(parameter.uid, audio_content)
+            # response = ReadAloudResponse(file_path=path)
+            # created_at = parameter.created_at
+
+            # message = ReadAloudPubSubMessage(
+            #     uid=parameter.uid,
+            #     text_to_speech=parameter.text,
+            #     voice_id=parameter.voice_id,
+            #     voice_type=parameter.voice_type,
+            #     path=path,
+            #     entry_id=parameter.entry_id,
+            #     created_at=created_at,
+            #     tid=parameter.tid,
+            #     original_tid=parameter.original_tid,
+            #     expiration_date=parameter.expiration_date
+            # )
+            # publish_to_read_aloud_usage_topic(data=message)
+
+
+        except PermissionError as e:
+            logger.error(f"generate_revised_entry: {e}")
+            raise HTTPException(
+                status_code=400, detail=e.to_dict())
+
+        except Exception as e:
+            logger.error(f"generate_voice: {e}")
+            raise HTTPException(
+                status_code=500, detail={
+                    "message": f"{e}"
+                })
+    
+    return "OK"  # response
+
