@@ -28,7 +28,6 @@ app.add_middleware(
 
 load_dotenv()
 chat_model_name_default = os.getenv("DEFAULT_CHAT_MODEL_NAME")
-chat_model_name_premium = os.getenv("PREMIUM_CHAT_MODEL_NAME")
 
 
 class ReviseParameters(BaseModel):
@@ -58,8 +57,10 @@ class TextToSpeechParameters(BaseModel):
 def generate_revised_entry(parameter: ReviseParameters):
     try:
         chat_model_name = chat_model_name_default
-        if parameter.model_type == 'premium':
-            chat_model_name = chat_model_name_premium
+        # gpt-4o 利用停止
+        # if parameter.model_type == 'premium':
+        #     chat_model_name = chat_model_name_premium
+        model_type = 'standard' # 固定
         result = revise_text(parameter.text, chat_model_name)
         response = ReviseResponse(revised_text=result.revised)
         created_at = parameter.created_at
@@ -68,6 +69,7 @@ def generate_revised_entry(parameter: ReviseParameters):
             uid=parameter.uid,
             text=parameter.text,
             revised_text=result.revised,
+            model_type=model_type,
             entry_id=parameter.entry_id,
             created_at=created_at,
             tid=parameter.tid,
@@ -123,7 +125,8 @@ def generate_readaloud(parameter: TextToSpeechParameters):
     try:
         voice_id = parameter.voice_id
         voice_type = parameter.voice_type
-        audio_content = text_to_speech(parameter.text, voice_id, voice_type)
+        result = text_to_speech(parameter.text, voice_id, voice_type)
+        audio_content = result.audio
         path = upload_data_to_storage(parameter.uid, audio_content)
         response = ReadAloudResponse(file_path=path)
         created_at = parameter.created_at
@@ -131,8 +134,8 @@ def generate_readaloud(parameter: TextToSpeechParameters):
         message = ReadAloudPubSubMessage(
             uid=parameter.uid,
             text_to_speech=parameter.text,
-            voice_id=parameter.voice_id,
-            voice_type=parameter.voice_type,
+            voice_id=result.voice_id,
+            voice_type=result.voice_type,
             path=path,
             entry_id=parameter.entry_id,
             created_at=created_at,

@@ -4,14 +4,15 @@ import emoji
 from dotenv import load_dotenv
 from google.cloud import texttospeech
 from logger import get_logger
+from domain.readaloud import ReadAloud
 # from openai import OpenAI
 
 logger = get_logger()
 load_dotenv()
 # openai_api_key = os.getenv("OPENAI_API_KEY")
 # openAIClient = OpenAI(api_key=openai_api_key)
-standard_voice_name = os.getenv("STANDARD_VOICE_NAME")
-premium_voice_name = os.getenv("PREMIUM_VOICE_NAME")
+standard_voice_id = os.getenv("STANDARD_VOICE_NAME")
+premium_voice_id = os.getenv("PREMIUM_VOICE_NAME")
 
 client = texttospeech.TextToSpeechClient()
 
@@ -22,11 +23,14 @@ def _get_voice_name(voice_id: str, voice_type: str) -> str:
 
     # API仕様が変わった時に前のアプリバージョンをサポートする
     if voice_type == "premium":
-        return premium_voice_name
-    return standard_voice_name
+        if voice_id == "":
+            return premium_voice_id
+        else:
+            return voice_id
+    return standard_voice_id
 
 
-def text_to_speech(text: str, voice_id: str, voice_type: str):
+def text_to_speech(text: str, voice_id: str, voice_type: str) -> ReadAloud:
 
     # if voice_type != "":
     #     response = openAIClient.audio.speech.create(
@@ -58,4 +62,8 @@ def text_to_speech(text: str, voice_id: str, voice_type: str):
     response = client.synthesize_speech(
         input=synthesis_input, voice=voice, audio_config=audio_config
     )
-    return response.audio_content
+    return ReadAloud(
+        audio=response.audio_content,
+        voice_type=voice_type,
+        voice_id=voice_name
+    )
