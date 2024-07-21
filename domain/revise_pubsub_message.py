@@ -4,7 +4,7 @@ class RevisePubSubMessage:
         uid: str,
         text: str,
         revised_text: str,
-        model_type: str,
+        model_type: str | None,
         entry_id: str,
         created_at: str,
         tid: str | None,

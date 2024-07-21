@@ -35,7 +35,7 @@ class ReviseParameters(BaseModel):
     text: str
     entry_id: str
     created_at: str
-    model_type: str
+    model_type: Optional[str] = None
     tid: Optional[str]
     original_tid: Optional[str]
     expiration_date: Optional[str]
