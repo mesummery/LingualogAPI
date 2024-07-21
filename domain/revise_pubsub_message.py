@@ -4,6 +4,7 @@ class RevisePubSubMessage:
         uid: str,
         text: str,
         revised_text: str,
+        model_type: str,
         entry_id: str,
         created_at: str,
         tid: str | None,
@@ -15,6 +16,7 @@ class RevisePubSubMessage:
         self.original_tid = original_tid
         self.text = text
         self.revised_text = revised_text
+        self.model_type = model_type
         self.entry_id = entry_id
         self.created_at = created_at
         self.expiration_date = expiration_date
@@ -24,6 +26,7 @@ class RevisePubSubMessage:
             "uid": self.uid,
             "text": self.text,
             "revised_text": self.revised_text,
+            "model_type": self.model_type,
             "entry_id": self.entry_id,
             "created_at": self.created_at,
         }
