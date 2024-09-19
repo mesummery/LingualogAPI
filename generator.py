@@ -24,9 +24,9 @@ def revise_text(text: str, chat_model_name: str) -> RevisedEntry:
         raise exception.TextLengthError(message="The text is too long.")
 
     prompt = f"""
-    "{text}"
-    ---
     {revise_prompt}
+    ---
+    {text}
     """
     revised = __generate_revised_text(prompt, chat_model_name)
     return revised
