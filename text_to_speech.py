@@ -12,7 +12,7 @@ load_dotenv()
 # openai_api_key = os.getenv("OPENAI_API_KEY")
 # openAIClient = OpenAI(api_key=openai_api_key)
 standard_voice_id = os.getenv("STANDARD_VOICE_NAME")
-premium_voice_id = os.getenv("PREMIUM_VOICE_NAME")
+deprecated_voice_ids = os.getenv("DEPRECATED_VOICE_NAMES").split(",")
 
 client = texttospeech.TextToSpeechClient()
 
@@ -23,8 +23,8 @@ def _get_voice_name(voice_id: str, voice_type: str) -> str:
 
     # API仕様が変わった時に前のアプリバージョンをサポートする
     if voice_type == "premium":
-        if voice_id == "":
-            return premium_voice_id
+        if voice_id == "" or voice_id in deprecated_voice_ids: # 廃止された音声はスタンダードに変更
+            return standard_voice_id
         else:
             return voice_id
     return standard_voice_id
